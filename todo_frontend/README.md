@@ -1,82 +1,77 @@
-# Lightweight React Template for KAVIA
+# Todo Frontend (React)
 
-This project provides a minimal React template with a clean, modern UI and minimal dependencies.
+A modern, minimalistic React UI for the Smart Task Organizer. It communicates with the Flask backend over HTTP and uses cookie-based sessions.
 
-## Features
+Contents:
+- Environment variables
+- Connecting to the backend
+- Local development setup
+- Troubleshooting common issues
 
-- **Lightweight**: No heavy UI frameworks - uses only vanilla CSS and React
-- **Modern UI**: Clean, responsive design with KAVIA brand styling
-- **Fast**: Minimal dependencies for quick loading times
-- **Simple**: Easy to understand and modify
+## Environment variables
 
-## Getting Started
+Create a `.env` file in this directory using `.env.example` as a starting point.
 
-In the project directory, you can run:
+- REACT_APP_API_BASE: Base URL for API requests from the browser. The frontend API client defaults to "/api" if not provided, but for local dev you typically set the full backend URL, e.g.:
+  - REACT_APP_API_BASE=http://localhost:5000
 
-### `npm start`
+Note: Create React App (react-scripts) will inline variables prefixed with REACT_APP_ at build time.
 
-Runs the app in development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+## Connecting to the backend
 
-### `npm test`
+Backend base URL:
+- If the backend runs at http://localhost:5000, set:
+  - REACT_APP_API_BASE=http://localhost:5000
 
-Launches the test runner in interactive watch mode.
+Session cookies and CORS:
+- The frontend API client sends requests with credentials: "include" for cookie-based sessions.
+- Ensure the backend allows your frontend origin via FRONTEND_ORIGIN (see backend README).
+- For HTTPS scenarios with cross-site cookies, configure backend cookie attributes appropriately:
+  - SESSION_COOKIE_SAMESITE=None
+  - SESSION_COOKIE_SECURE=True
 
-### `npm run build`
+## Local development setup
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+Prerequisites:
+- Node.js 18+
 
-## Customization
+Steps:
+1) Ensure the backend is up and the database is running
+   - Follow backend README to start `todo_database` first and then the Flask backend.
 
-### Colors
+2) Configure frontend .env
+   - Copy .env.example to .env
+   - Set REACT_APP_API_BASE to your backend origin, e.g.:
+     REACT_APP_API_BASE=http://localhost:5000
 
-The main brand colors are defined as CSS variables in `src/App.css`:
+3) Install and start
+   - cd smart-task-organizer-72289-72340/todo_frontend
+   - npm install
+   - npm start
+   - Open http://localhost:3000
 
-```css
-:root {
-  --kavia-orange: #E87A41;
-  --kavia-dark: #1A1A1A;
-  --text-color: #ffffff;
-  --text-secondary: rgba(255, 255, 255, 0.7);
-  --border-color: rgba(255, 255, 255, 0.1);
-}
-```
+## Troubleshooting
 
-### Components
+- 401 Not authenticated or login not persisting:
+  - Verify backend is reachable at REACT_APP_API_BASE/auth/me.
+  - Cookies require matching CORS and cookie settings. Ensure:
+    - Backend FRONTEND_ORIGIN includes http://localhost:3000
+    - If using HTTPS on the frontend, you may need SESSION_COOKIE_SAMESITE=None and SESSION_COOKIE_SECURE=True on the backend.
 
-This template uses pure HTML/CSS components instead of a UI framework. You can find component styles in `src/App.css`. 
+- Network error or CORS error in browser console:
+  - Check that REACT_APP_API_BASE is correct and backend is running.
+  - Backend CORS must not use "*" when credentials are included. Set specific origins via FRONTEND_ORIGIN.
 
-Common components include:
-- Buttons (`.btn`, `.btn-large`)
-- Container (`.container`)
-- Navigation (`.navbar`)
-- Typography (`.title`, `.subtitle`, `.description`)
+- API path mismatch:
+  - The client prepends REACT_APP_API_BASE to paths like /auth/login, /tasks, etc. If you proxy or mount API behind /api, update REACT_APP_API_BASE accordingly (e.g. http://localhost:5000/api).
 
-## Learn More
+## Project structure (frontend)
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+- src/api/client.js: API client reading REACT_APP_API_BASE; sends credentials; exposes login/logout/me and task/subtask methods.
+- src/components/*: UI components for login, lists, details, forms.
+- src/App.js, src/App.css: App shell and layout/theme.
 
-### Code Splitting
+## Notes
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+- The UI currently uses simple username-based login form. Backend ignores password in the reference implementation.
+- For production, enforce HTTPS, secure cookies, and proper backend authentication.
